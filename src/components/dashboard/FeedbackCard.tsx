@@ -5,20 +5,73 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { fetchFeedback } from "@/services/fetchFeedback";
+import { CloudAlert, Loader2 } from "lucide-react";
+import { ReusableAlertDialog } from "@/reusableComponents/ReusableAlertDialog";
+import { deleteFeedback } from "@/services/deleteFeedback";
+import toast from "react-hot-toast";
 
 export function FeedbackCard() {
 
     const [feedback, setFeedback] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [onDelete, setOnDelete] = useState(false);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     useEffect(() => {
         console.log("FETCHING DATA NOW...");
+
         const getData = async () => {
-            const data = await fetchFeedback();
-            setFeedback(data);
+            try {
+                setLoading(true);
+                const data = await fetchFeedback();
+                setFeedback(data);
+            } catch (error) {
+                console.error("Error fetching feedback:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
         getData();
     }, []);
+
+
+    const handleDelete = async () => {
+        try {
+            if (!selectedId) return;
+
+            const res = await deleteFeedback({ feedbackId: selectedId });
+
+            setFeedback(prev =>
+                prev.filter(item => item.id !== res.deletedId)
+            );
+            toast.success("Feedback deleted successfully.")
+            setOnDelete(false);
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to delete feedback.")
+        }
+    }
+
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center py-10">
+                <p className="text-sm text-gray-500 animate-pulse flex flex-col items-center justify-center gap-2">
+                    <Loader2 className="animate-spin" />Loading feedback...
+                </p>
+            </div>
+        )
+    }
+
+    if (!loading && feedback.length === 0) {
+        return (
+            <Card className="text-center py-10 text-gray-500 text-xs flex flex-col items-center justify-center">
+                <CloudAlert className="w-8 h-8" />
+                No feedback available.
+            </Card>
+        )
+    }
 
     return (
         <>
@@ -60,7 +113,11 @@ export function FeedbackCard() {
                                     <Button variant="outline" size="sm" className="cursor-pointer">
                                         Edit
                                     </Button>
-                                    <Button variant="destructive" size="sm" className="cursor-pointer">
+                                    <Button onClick={() => {
+                                        setSelectedId(item.id)
+                                        setOnDelete(true)
+                                    }
+                                    } variant="destructive" size="sm" className="cursor-pointer">
                                         Delete
                                     </Button>
                                 </div>
@@ -70,6 +127,16 @@ export function FeedbackCard() {
                     </Card>
                 ))
             }
+
+            {onDelete && (
+                <ReusableAlertDialog
+                    open={onDelete}
+                    onOpenChange={setOnDelete}
+                    onConfirm={handleDelete}
+                    title="Delete Feedback?"
+                    description="This action cannot be undone. This will permanently delete the selected feedback."
+                />
+            )}
         </>
     );
 }

@@ -32,21 +32,21 @@ export function ReusableAlertDialog({
 }: AlertDialogProps) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-white max-w-xs">
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className=" w-full text-center">{title}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-center w-full">
                         {description}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
-                <AlertDialogFooter>
-                    <AlertDialogCancel className="capitalize">
+                <AlertDialogFooter className="flex items-center md:justify-center">
+                    <AlertDialogCancel className="capitalize text-xs flex-1 cursor-pointer">
                         {button1}
                     </AlertDialogCancel>
 
                     <AlertDialogAction
-                        className="capitalize"
+                        className="capitalize text-xs flex-1 cursor-pointer"
                         onClick={onConfirm}
                     >
                         {button2}

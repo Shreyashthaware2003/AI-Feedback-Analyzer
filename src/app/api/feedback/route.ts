@@ -113,3 +113,60 @@ export async function GET(req: Request) {
         );
     }
 }
+
+// delete feedback
+
+export async function DELETE(req: Request) {
+    try {
+        const authHeader = req.headers.get("authorization");
+
+        if (!authHeader) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+
+        const token = authHeader.split(" ")[1];
+        const user = verifyToken(token) as { userId: string };
+
+        if (!user) {
+            return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+        }
+
+        const body = await req.json();
+        const { feedbackId } = body;
+
+        if (!feedbackId) {
+            return NextResponse.json(
+                { message: "Feedback ID is required" },
+                { status: 400 }
+            );
+        }
+
+        const result = await pool.query(
+            `DELETE FROM feedbacks
+       WHERE id = $1 AND "user_id" = $2
+       RETURNING id`,
+            [feedbackId, user.userId]
+        );
+
+        if (result.rowCount === 0) {
+            return NextResponse.json(
+                { message: "Feedback not found or already deleted" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: "Feedback deleted successfully",
+            deletedId: result.rows[0].id,
+        });
+
+    } catch (error) {
+        console.error("DELETE feedback error:", error);
+
+        return NextResponse.json(
+            { message: "Failed to delete feedback" },
+            { status: 500 }
+        );
+    }
+}

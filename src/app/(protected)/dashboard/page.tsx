@@ -40,7 +40,6 @@ export default function Dashboard() {
                         </h2>
 
                         <FeedbackCard />
-                        <FeedbackCard />
                     </div>
 
                 </main>
