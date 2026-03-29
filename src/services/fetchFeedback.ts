@@ -1,6 +1,10 @@
 import { api } from "@/lib/api";
 
 export async function fetchFeedback() {
-    const res = await api.get("/feedback");
-    return res.data.data;
+    try {
+        const res = await api.get("/feedback");
+        return res.data.data;
+    } catch (error) {
+        console.error("Error fetching feedback:", error);
+    }
 }

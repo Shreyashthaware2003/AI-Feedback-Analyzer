@@ -4,6 +4,7 @@ import { FeedbackForm } from "@/components/dashboard/FeedbackForm";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { FeedbackCard } from "@/components/dashboard/FeedbackCard";
 import { SidebarInset } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 export default function Dashboard() {
     return (
@@ -35,11 +36,10 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-4">
-                        <h2 className="text-sm font-bold uppercase">
-                            Recent Feedback
+                        <h2 className="text-sm font-semibold uppercase tracking-wide">
+                            Recent Feedback Feed
                         </h2>
-
-                        <FeedbackCard />
+                        <Separator />
                         <FeedbackCard />
                     </div>
 

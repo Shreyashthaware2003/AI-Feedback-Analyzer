@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 import { analyzeFeedback } from "@/services/ai";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { saveFeedback } from "@/services/saveFeedback";
 import { ReusableAlertDialog } from "@/reusableComponents/ReusableAlertDialog";
 import { Badge } from "../ui/badge";
@@ -22,7 +22,9 @@ export function FeedbackForm() {
     } | null>(null);
 
     const handleAnalyze = async () => {
-        if (!content.trim()) return;
+        if (!content.trim()) return(
+            toast.error("Please enter some feedback content to analyze.")
+        );
 
         try {
             setLoading(true);

@@ -5,6 +5,10 @@ export async function saveFeedback(data: {
     sentiment: string;
     summary: string;
 }) {
-    const res = await api.post('/feedback', data);
-    return res.data;
+    try {
+        const res = await api.post('/feedback', data);
+        return res.data;
+    } catch (error) {
+        console.error("Error saving feedback:", error);
+    }
 }
