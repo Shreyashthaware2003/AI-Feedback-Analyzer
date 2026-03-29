@@ -22,7 +22,7 @@ export function Header() {
     return (
         <header className="h-16 bg-white flex items-center justify-between px-6 z-[999]">
 
-            <h1 className="text-lg font-bold">AI ANALYZER</h1>
+            <h1 className="text-xl font-bold tracking-wider select-none">FeedLytix</h1>
 
             <nav className="hidden md:flex gap-8 text-sm font-medium">
                 <span className="border-b-2 border-black pb-1">Dashboard</span>

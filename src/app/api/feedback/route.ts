@@ -100,9 +100,22 @@ export async function GET(req: Request) {
             [userId]
         );
 
+        const stats = await pool.query(
+            `SELECT 
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE sentiment = 'Positive')::int AS positive,
+      COUNT(*) FILTER (WHERE sentiment = 'Negative')::int AS negative,
+      COUNT(*) FILTER (WHERE sentiment = 'Neutral')::int AS neutral,
+      COUNT(*) FILTER (WHERE is_edited = 'true')::int AS edited
+   FROM feedbacks
+   WHERE "user_id" = $1`,
+            [userId]
+        );
+
         return NextResponse.json({
             success: true,
             data: result.rows,
+            stats: stats.rows[0],
         });
 
     } catch (error) {
