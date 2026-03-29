@@ -11,7 +11,7 @@ import { saveFeedback } from "@/services/saveFeedback";
 import { ReusableAlertDialog } from "@/reusableComponents/ReusableAlertDialog";
 import { Badge } from "../ui/badge";
 
-export function FeedbackForm() {
+export function FeedbackForm({ onSaveSuccess }: { onSaveSuccess: () => void }) {
     const [content, setContent] = useState("");
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export function FeedbackForm() {
     } | null>(null);
 
     const handleAnalyze = async () => {
-        if (!content.trim()) return(
+        if (!content.trim()) return (
             toast.error("Please enter some feedback content to analyze.")
         );
 
@@ -49,6 +49,7 @@ export function FeedbackForm() {
         try {
             setSaveLoading(true);
             const data = await saveFeedback({ content, sentiment: result.sentiment, summary: result.summary });
+            onSaveSuccess();
 
             setContent("");
             setResult(null);
@@ -66,7 +67,6 @@ export function FeedbackForm() {
             <Card className="col-span-12 lg:col-span-8">
                 <CardContent className="p-6 space-y-4">
 
-                    {/* Header */}
                     <div>
                         <h2 className="text-sm font-semibold uppercase tracking-wide">
                             New Feedback Input
@@ -78,16 +78,14 @@ export function FeedbackForm() {
                         Paste Content for Analysis
                     </span>
 
-                    {/* Input */}
                     <Textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         readOnly={loading || saveLoading}
-                        placeholder="Enter raw customer feedback, survey responses or interview transcripts here..."
-                        className="h-40 resize-none mt-1"
+                        placeholder="Paste student feedback, course reviews, or survey responses to analyze sentiment and generate insights..."
+                        className="h-auto sm:h-80 resize-none mt-1"
                     />
 
-                    {/* Button */}
                     <div className="flex justify-end">
                         <Button
                             onClick={handleAnalyze}
@@ -97,7 +95,7 @@ export function FeedbackForm() {
               text-white
               hover:opacity-90
               h-10 text-xs cursor-pointer
-              flex items-center gap-2 w-36
+              flex items-center gap-2 w-40
             "
                         >{
                                 loading ?
@@ -112,7 +110,6 @@ export function FeedbackForm() {
                         </Button>
                     </div>
 
-                    {/* Result */}
                     {result && (
                         <div className="border rounded-md p-4 space-y-2 bg-gray-50">
                             <div className="flex items-center justify-between">

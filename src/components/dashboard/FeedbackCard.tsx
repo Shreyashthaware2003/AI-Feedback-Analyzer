@@ -13,30 +13,19 @@ import { ReusableEditDialog } from "@/reusableComponents/ReusableEditDialog";
 import { updateFeedback } from "@/services/updateFeedback";
 import { analyzeFeedback } from "@/services/ai";
 
-export function FeedbackCard() {
-    const [feedback, setFeedback] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
+interface FeedbackCardProps {
+    feedback: any[];
+    setFeedback: React.Dispatch<React.SetStateAction<any[]>>;
+    loading: boolean;
+}
+
+export function FeedbackCard({ feedback, setFeedback, loading }: FeedbackCardProps) {
+  
 
     const [onDelete, setOnDelete] = useState(false);
     const [onEdit, setOnEdit] = useState(false);
 
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
-
-    useEffect(() => {
-        const getData = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchFeedback();
-                setFeedback(data);
-            } catch (error) {
-                console.error("Error fetching feedback:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        getData();
-    }, []);
 
     // ✅ DELETE
     const handleDelete = async () => {

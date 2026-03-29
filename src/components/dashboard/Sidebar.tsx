@@ -11,8 +11,7 @@ import {
     SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
     LayoutDashboard,
@@ -20,6 +19,8 @@ import {
     FileText,
     Archive,
 } from "lucide-react";
+
+import {toast} from 'sonner'
 
 const menuItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -30,23 +31,23 @@ const menuItems = [
 
 export function RootSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleNavigation = (href: string) => {
+        if (href !== "/dashboard") {
+            toast.error("Only 'Overview' page is available in this demo");
+            return;
+        }
+
+        router.push(href);
+    };
 
     return (
-        <Sidebar className="bg-gray-100">
-
-            <SidebarHeader>
-                <div className="px-4 py-2">
-                    <h1 className="text-lg font-bold">PROJECT_ALPHA</h1>
-                    <p className="text-xs text-muted-foreground">
-                        Precision Feedback
-                    </p>
-                </div>
-            </SidebarHeader>
+        <Sidebar className="bg-gray-100 mt-20">
 
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarMenu>
-
                         {menuItems.map((item) => {
                             const isActive = pathname === item.href;
                             const Icon = item.icon;
@@ -54,24 +55,21 @@ export function RootSidebar() {
                             return (
                                 <SidebarMenuItem key={item.href}>
                                     <SidebarMenuButton
-                                        asChild
+                                        onClick={() => handleNavigation(item.href)}
                                         className={`
-          flex items-center gap-2
-          transition-colors rounded-md px-3 py-2 my-1
-          ${isActive
+                                            flex items-center gap-2
+                                            transition-colors rounded-md px-3 py-2 my-1
+                                            ${isActive
                                                 ? "bg-black text-white"
                                                 : "hover:bg-gray-200"}
-        `}
+                                        `}
                                     >
-                                        <Link href={item.href} className="flex items-center gap-2 w-full">
-                                            <Icon size={18} />
-                                            <span>{item.label}</span>
-                                        </Link>
+                                        <Icon size={18} />
+                                        <span>{item.label}</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             );
                         })}
-
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
