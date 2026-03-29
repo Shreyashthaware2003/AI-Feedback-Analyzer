@@ -41,12 +41,12 @@ export function ReusableAlertDialog({
                 </AlertDialogHeader>
 
                 <AlertDialogFooter className="flex items-center md:justify-center">
-                    <AlertDialogCancel className="capitalize sm:text-xs flex-1 cursor-pointer">
+                    <AlertDialogCancel className="capitalize sm:text-xs flex-1 cursor-pointer h-9">
                         {button1}
                     </AlertDialogCancel>
 
                     <AlertDialogAction
-                        className="capitalize text-xs sm:flex-1 cursor-pointer"
+                        className="capitalize text-xs sm:flex-1 cursor-pointer h-9"
                         onClick={onConfirm}
                     >
                         {button2}
