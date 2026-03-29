@@ -32,7 +32,7 @@ export function ReusableAlertDialog({
 }: AlertDialogProps) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent className="bg-white max-w-xs">
+            <AlertDialogContent className="bg-white sm:max-w-xs">
                 <AlertDialogHeader>
                     <AlertDialogTitle className=" w-full text-center">{title}</AlertDialogTitle>
                     <AlertDialogDescription className="text-center w-full">

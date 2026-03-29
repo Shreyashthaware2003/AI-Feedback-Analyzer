@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -115,6 +115,13 @@ export default function AuthPage() {
         }
     };
 
+    const handleKeydown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleSubmit();
+        }
+    }
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-white text-black w-full">
             <div className="w-full max-w-md border rounded-2xl p-8 space-y-6 shadow-sm">
@@ -143,6 +150,7 @@ export default function AuthPage() {
                             name="name"
                             placeholder="Enter your name"
                             onChange={handleChange}
+                            onKeyDown={handleKeydown}
                             value={form.name}
                         />
                         {errors.name && (
@@ -157,7 +165,9 @@ export default function AuthPage() {
                         name="email"
                         placeholder="Enter your email"
                         onChange={handleChange}
-                        value={form.email}
+                        onKeyDown={handleKeydown}
+                        value={form.email.toLowerCase()}
+                    // className="lowercase"
                     />
                     {errors.email && (
                         <p className="text-red-500 text-xs">{errors.email}</p>
@@ -173,6 +183,7 @@ export default function AuthPage() {
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
                             onChange={handleChange}
+                            onKeyDown={handleKeydown}
                             value={form.password}
                             className="pr-10"
                         />
@@ -180,7 +191,7 @@ export default function AuthPage() {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-2.5 text-gray-600"
+                            className="absolute right-3 top-2.5 text-gray-600 cursor-pointer"
                         >
                             {showPassword ? (
                                 <EyeClosed className="w-4 h-4" />
@@ -198,10 +209,10 @@ export default function AuthPage() {
                 <Button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="w-full bg-black text-white h-10"
+                    className="w-full bg-black text-white h-10 cursor-pointer"
                 >
                     {loading
-                        ? "Please wait..."
+                        ? <Loader2 className="animate-spin w-4 h-4 mx-auto" />
                         : isLogin
                             ? "Login"
                             : "Register"}

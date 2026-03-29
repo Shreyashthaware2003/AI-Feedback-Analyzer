@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,18 +8,21 @@ import { fetchFeedback } from "@/services/fetchFeedback";
 import { CloudAlert, Loader2 } from "lucide-react";
 import { ReusableAlertDialog } from "@/reusableComponents/ReusableAlertDialog";
 import { deleteFeedback } from "@/services/deleteFeedback";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+import { ReusableEditDialog } from "@/reusableComponents/ReusableEditDialog";
+import { updateFeedback } from "@/services/updateFeedback";
+import { analyzeFeedback } from "@/services/ai";
 
 export function FeedbackCard() {
-
     const [feedback, setFeedback] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+
     const [onDelete, setOnDelete] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [onEdit, setOnEdit] = useState(false);
+
+    const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
     useEffect(() => {
-        console.log("FETCHING DATA NOW...");
-
         const getData = async () => {
             try {
                 setLoading(true);
@@ -35,108 +38,199 @@ export function FeedbackCard() {
         getData();
     }, []);
 
-
+    // ✅ DELETE
     const handleDelete = async () => {
         try {
-            if (!selectedId) return;
+            if (!selectedItem) return;
 
-            const res = await deleteFeedback({ feedbackId: selectedId });
+            const res = await deleteFeedback({
+                feedbackId: selectedItem.id,
+            });
 
-            setFeedback(prev =>
-                prev.filter(item => item.id !== res.deletedId)
+            setFeedback((prev) =>
+                prev.filter((item) => item.id !== res.deletedId)
             );
-            toast.success("Feedback deleted successfully.")
+
+            toast.success("Feedback deleted successfully");
             setOnDelete(false);
         } catch (error) {
             console.log(error);
-            toast.error("Failed to delete feedback.")
+            toast.error("Failed to delete feedback");
         }
-    }
+    };
+
+    const handleEdit = async (data: Record<string, string>) => {
+        try {
+            if (!selectedItem) return;
+
+            toast("Re-analyzing feedback...", { icon: "🤖" });
+
+            // Reanalyzing with AI to get updated sentiment and summary based on the edited content
+            const aiResponse = await analyzeFeedback(data.content);
 
 
+            const payload = {
+                content: data.content,
+                sentiment: aiResponse.sentiment,
+                summary: aiResponse.summary,
+            };
+
+            //once the AI analysis is done, updating the feedback with new content
+            const res = await updateFeedback(selectedItem.id, payload);
+
+            setFeedback((prev) =>
+                prev.map((f) =>
+                    f.id === selectedItem.id ? res.data : f
+                )
+            );
+
+            toast.success("Feedback updated with AI insights");
+            setOnEdit(false);
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to update feedback");
+        }
+    };
+
+
+    // ✅ LOADING STATE
     if (loading) {
         return (
             <div className="flex justify-center items-center py-10">
-                <p className="text-sm text-gray-500 animate-pulse flex flex-col items-center justify-center gap-2">
-                    <Loader2 className="animate-spin" />Loading feedback...
+                <p className="text-sm text-gray-500 animate-pulse flex flex-col items-center gap-2">
+                    <Loader2 className="animate-spin" />
+                    Loading feedback...
                 </p>
             </div>
-        )
+        );
     }
 
+    // ✅ EMPTY STATE
     if (!loading && feedback.length === 0) {
         return (
-            <Card className="text-center py-10 text-gray-500 text-xs flex flex-col items-center justify-center">
+            <Card className="text-center py-10 text-gray-500 text-xs flex flex-col items-center">
                 <CloudAlert className="w-8 h-8" />
                 No feedback available.
             </Card>
-        )
+        );
     }
 
     return (
         <>
-            {
-                feedback.map((item: any) => (
-                    <Card key={item.id} className="hover:bg-[#e4e4e4] bg-[#f2f2f2]">
-                        <CardContent className="p-6 flex flex-col md:flex-row md:justify-between gap-6">
-                            <div className="flex items-start w-full">
+            {feedback.map((item: any) => (
+                <Card
+                    key={item.id}
+                    className="hover:bg-[#e4e4e4] bg-[#f2f2f2] relative"
+                >
+                    <CardContent className="space-y-4">
+                        {item.is_edited && (
+                            <>
+                                <div className="flex items-center gap-2">
+                                    <Badge className=" border-gray-400 text-gray-600 uppercase bg-transparent tracking-wider font-semibold text-[9px]">edited</Badge>
+                                    <span className="text-[10px] text-muted-foreground">Last edited: {new Date(item.edited_at).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                    })}</span>
+                                </div>
+                            </>
+                        )}
+                        <div className="flex flex-col md:flex-row md:justify-between gap-6 ">
 
+                            <div className="flex flex-col items-start w-full sm:max-w-4xl space-y-4">
                                 {/* Content */}
-                                <div className="flex-1 space-y-3 max-w-sm group">
+                                <div className="flex-1 space-y-3 group h-full w-full">
                                     <div className="flex gap-2 items-center">
-                                        <Badge className={`${item.sentiment.toLowerCase() === 'positive' ? "bg-green-100 text-green-600 border-green-600"
-                                            : item.sentiment.toLowerCase() === 'negative' ? "bg-red-100 text-red-600 border-red-600" : "bg-yellow-100 text-yellow-600 border-yellow-600"
-                                            }`}>
+                                        <Badge
+                                            className={`uppercase text-[11px] font-semibold tracking-wider bg-transparent ${item.sentiment.toLowerCase() === "positive"
+                                                ? " text-green-600 border-green-600"
+                                                : item.sentiment.toLowerCase() === "negative"
+                                                    ? " text-red-600 border-red-600"
+                                                    : " text-yellow-600 border-yellow-600"
+                                                }`}
+                                        >
                                             {item.sentiment}
                                         </Badge>
                                     </div>
 
-                                    <p className="text-sm italic font-medium line-clamp-3 group-hover:line-clamp-none break-words transition-all">
+                                    <p className="text-sm italic font-medium w-full break-words">
                                         "{item.content}"
                                     </p>
                                 </div>
 
                                 {/* Summary */}
-                                <div className="flex-1 border-l-2 border-black bg-white max-w-md p-4">
+                                <div className="flex-1 border-l-2 border-black bg-white w-full p-4">
                                     <p className="text-[9px] font-semibold tracking-widest text-muted-foreground mb-2 uppercase">
                                         AI Summary
                                     </p>
-                                    <p className="text-xs text-gray-600 line-clamp-4">
+                                    <p className="text-xs text-gray-600 break-words w-full">
                                         {item.summary}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 sm:absolute top-4 right-4">
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="cursor-pointer">
-                                        Edit
+                                    {/* ✅ EDIT */}
+                                    <Button
+                                        onClick={() => {
+                                            setSelectedItem(item);
+                                            setOnEdit(true);
+                                        }}
+                                        variant="outline"
+                                        size="sm"
+                                        className="cursor-pointer text-xs"
+                                    >
+                                        Re-analyze
                                     </Button>
-                                    <Button onClick={() => {
-                                        setSelectedId(item.id)
-                                        setOnDelete(true)
-                                    }
-                                    } variant="destructive" size="sm" className="cursor-pointer">
+
+                                    {/* ✅ DELETE */}
+                                    <Button
+                                        onClick={() => {
+                                            setSelectedItem(item);
+                                            setOnDelete(true);
+                                        }}
+                                        variant="destructive"
+                                        size="sm"
+                                        className="cursor-pointer text-xs"
+                                    >
                                         Delete
                                     </Button>
                                 </div>
                             </div>
-
-                        </CardContent>
-                    </Card>
-                ))
+                        </div>
+                    </CardContent>
+                </Card >
+            ))
             }
 
-            {onDelete && (
-                <ReusableAlertDialog
-                    open={onDelete}
-                    onOpenChange={setOnDelete}
-                    onConfirm={handleDelete}
-                    title="Delete Feedback?"
-                    description="This action cannot be undone. This will permanently delete the selected feedback."
-                />
-            )}
+            {/* ✅ DELETE DIALOG */}
+            {
+                onDelete && (
+                    <ReusableAlertDialog
+                        open={onDelete}
+                        onOpenChange={setOnDelete}
+                        onConfirm={handleDelete}
+                        title="Delete Feedback?"
+                        description="This action cannot be undone."
+                        button2="delete"
+                    />
+                )
+            }
+
+            {/* ✅ EDIT DIALOG */}
+            {
+                onEdit && selectedItem && (
+                    <ReusableEditDialog
+                        title="Edit Feedback"
+                        initialContent={selectedItem.content}
+                        open={onEdit}
+                        onOpenChange={setOnEdit}
+                        onSave={handleEdit}
+                    />
+                )
+            }
         </>
     );
 }
