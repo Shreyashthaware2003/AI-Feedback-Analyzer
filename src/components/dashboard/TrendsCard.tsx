@@ -42,6 +42,12 @@ export function TrendChart({ trends, loading }: TrendChartProps) {
 
     const safeData = trends ?? [];
 
+    if (loading) {
+        return (
+            <Skeleton className="aspect-video w-full bg-gray-300 h-[320px]" />
+        );
+    }
+
     if (!safeData.length) {
         return (
             <>
@@ -59,62 +65,58 @@ export function TrendChart({ trends, loading }: TrendChartProps) {
 
     return (
         <>
-            {loading ? (
-                <Skeleton className="aspect-video w-full bg-gray-300 h-[320px]" />
-            ) : (
-                <Card className="h-[320px] flex-1 ">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-xs">
-                            Sentiment Trends (7 Days)
-                        </CardTitle>
-                    </CardHeader>
+            <Card className="h-[320px] flex-1 ">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-xs">
+                        Sentiment Trends (7 Days)
+                    </CardTitle>
+                </CardHeader>
 
-                    <CardContent className="p-2">
-                        <ChartContainer config={chartConfig} className="h-[220px] w-full">
-                            <BarChart accessibilityLayer data={safeData}>
+                <CardContent className="p-2">
+                    <ChartContainer config={chartConfig} className="h-[220px] w-full">
+                        <BarChart accessibilityLayer data={safeData}>
 
-                                <XAxis
-                                    dataKey="date"
-                                    tickLine={false}
-                                    tickMargin={8}
-                                    axisLine={false}
-                                    tickFormatter={(value) =>
-                                        new Date(value).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                        })
-                                    }
-                                />
+                            <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                tickMargin={8}
+                                axisLine={false}
+                                tickFormatter={(value) =>
+                                    new Date(value).toLocaleDateString("en-IN", {
+                                        day: "numeric",
+                                        month: "short",
+                                    })
+                                }
+                            />
 
-                                <Bar
-                                    dataKey="positive"
-                                    stackId="a"
-                                    fill={chartConfig.positive.color}
-                                    radius={[0, 0, 3, 3]}
-                                />
+                            <Bar
+                                dataKey="positive"
+                                stackId="a"
+                                fill={chartConfig.positive.color}
+                                radius={[0, 0, 3, 3]}
+                            />
 
-                                <Bar
-                                    dataKey="negative"
-                                    stackId="a"
-                                    fill={chartConfig.negative.color}
-                                />
+                            <Bar
+                                dataKey="negative"
+                                stackId="a"
+                                fill={chartConfig.negative.color}
+                            />
 
-                                <Bar
-                                    dataKey="neutral"
-                                    stackId="a"
-                                    fill={chartConfig.neutral.color}
-                                    radius={[3, 3, 0, 0]}
-                                />
+                            <Bar
+                                dataKey="neutral"
+                                stackId="a"
+                                fill={chartConfig.neutral.color}
+                                radius={[3, 3, 0, 0]}
+                            />
 
-                                <ChartTooltip
-                                    content={<ChartTooltipContent hideIndicator />}
-                                    cursor={false}
-                                />
-                            </BarChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
-            )}
+                            <ChartTooltip
+                                content={<ChartTooltipContent hideIndicator />}
+                                cursor={false}
+                            />
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
         </>
     );
 }
