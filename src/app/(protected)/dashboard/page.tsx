@@ -9,19 +9,28 @@ import { FeedbackCard } from "@/components/dashboard/FeedbackCard";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { fetchFeedback } from "@/services/fetchFeedback";
+import Pagination from "@/reusableComponents/ReusablePagination";
+import { toast } from "sonner";
+import { fetchMetrics } from "@/services/fetchMetrics";
+import { TrendChart } from "@/components/dashboard/TrendsCard";
+import MetricsCard from "@/components/dashboard/MetricsCard";
 
 export default function Dashboard() {
     const [feedback, setFeedback] = useState<any[]>([]);
     const [stats, setStats] = useState<any>({});
+    const [trends, setTrends] = useState<any[]>([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [metricsLoading, setMetricsLoading] = useState(false);
 
     const fetchAllFeedback = async () => {
         try {
             setLoading(true);
-            const data = await fetchFeedback();
+            const data = await fetchFeedback(page, 5);
 
             setFeedback(data?.feedback);
-            setStats(data?.stats);
+            setTotalPages(data?.pagination?.totalPages || 1);
         } catch (error) {
             console.error("Error fetching feedback:", error);
         } finally {
@@ -29,8 +38,30 @@ export default function Dashboard() {
         }
     };
 
+    const fetchAllMetrics = async () => {
+        {
+            try {
+                setMetricsLoading(true);
+                const data = await fetchMetrics();
+                setStats(data?.stats);
+                setTrends(data?.trends);
+            } catch (error) {
+                console.log("Error fetching metrics:", error);
+                toast.error("Failed to fetch metrics");
+            } finally {
+                setMetricsLoading(false);
+            }
+        }
+    }
+
+    // fetch all the feedbacks
     useEffect(() => {
         fetchAllFeedback();
+    }, [page]);
+
+    // fetch all the metrics
+    useEffect(() => {
+        fetchAllMetrics();
     }, []);
 
     return (
@@ -55,7 +86,14 @@ export default function Dashboard() {
 
                         <FeedbackForm onSaveSuccess={fetchAllFeedback} />
 
-                        <StatsCards stats={stats} loading={loading} />
+                        <StatsCards stats={stats} loading={metricsLoading} />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-6">
+                        <div className="max-w-3xl w-full">
+                            <TrendChart trends={trends} loading={metricsLoading} />
+                        </div>
+                        <MetricsCard stats={stats} loading={metricsLoading} />
                     </div>
 
                     <div className="space-y-4">
@@ -69,10 +107,16 @@ export default function Dashboard() {
                             setFeedback={setFeedback}
                             loading={loading}
                         />
+                        <Pagination
+                            page={page}
+                            totalPages={totalPages}
+                            onPageChange={setPage}
+                        />
                     </div>
 
                 </main>
             </SidebarInset>
+
         </>
     );
 }

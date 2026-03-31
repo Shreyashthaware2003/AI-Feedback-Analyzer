@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { pool } from "@/lib/db";
 import { unauthorized } from "next/navigation";
+import { isRateLimited } from "@/lib/rateLimit";
 
 
 // Save Feedback
@@ -29,6 +30,14 @@ export async function POST(req: Request) {
         }
 
         const userId = user.userId;
+
+        if (isRateLimited(userId)) {
+            return NextResponse.json(
+                { message: "Too many requests. Please try again later." },
+                { status: 429 }
+            );
+        }
+
 
         // 📩 2. BODY
         const { content, sentiment, summary } = await req.json();
@@ -77,45 +86,51 @@ export async function GET(req: Request) {
         const user = verifyToken(token) as { userId: string };
 
         if (!user) {
+            return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+        }
+
+        const userId = user.userId;
+
+        if (isRateLimited(userId)) {
             return NextResponse.json(
-                { error: "Invalid token" },
-                { status: 401 }
+                { message: "Too many requests. Please try again later." },
+                { status: 429 }
             );
         }
 
+        const { searchParams } = new URL(req.url);
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "5");
 
-        const userId = user?.userId;
-
-        console.log("USER =====>", user);
-
-        if (!user) {
-            return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-        }
+        const offset = (page - 1) * limit;
 
         const result = await pool.query(
-            `SELECT id, content, sentiment, summary, "created_at",edited_at, is_edited
-       FROM feedbacks
-       WHERE "user_id" = $1
-       ORDER BY "created_at" DESC`,
+            `SELECT id, content, sentiment, summary, "created_at", edited_at, is_edited
+             FROM feedbacks
+             WHERE "user_id" = $1
+             ORDER BY "created_at" DESC
+             LIMIT $2 OFFSET $3`,
+            [userId, limit, offset]
+        );
+
+        const totalCountResult = await pool.query(
+            `SELECT COUNT(*)::int AS total 
+             FROM feedbacks 
+             WHERE "user_id" = $1`,
             [userId]
         );
 
-        const stats = await pool.query(
-            `SELECT 
-      COUNT(*)::int AS total,
-      COUNT(*) FILTER (WHERE sentiment = 'Positive')::int AS positive,
-      COUNT(*) FILTER (WHERE sentiment = 'Negative')::int AS negative,
-      COUNT(*) FILTER (WHERE sentiment = 'Neutral')::int AS neutral,
-      COUNT(*) FILTER (WHERE is_edited = 'true')::int AS edited
-   FROM feedbacks
-   WHERE "user_id" = $1`,
-            [userId]
-        );
+        const total = totalCountResult.rows[0].total;
 
         return NextResponse.json({
             success: true,
             data: result.rows,
-            stats: stats.rows[0],
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
         });
 
     } catch (error) {
@@ -152,6 +167,14 @@ export async function PATCH(req: Request) {
         }
 
         const userId = user.userId;
+
+        if (isRateLimited(userId)) {
+            return NextResponse.json(
+                { message: "Too many requests. Please try again later." },
+                { status: 429 }
+            );
+        }
+
 
         const body = await req.json();
         const { feedbackId, content, sentiment, summary } = body;
@@ -251,6 +274,7 @@ export async function DELETE(req: Request) {
         if (!user) {
             return NextResponse.json({ message: "Invalid token" }, { status: 401 });
         }
+        
 
         const body = await req.json();
         const { feedbackId } = body;

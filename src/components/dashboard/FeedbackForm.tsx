@@ -83,7 +83,7 @@ export function FeedbackForm({ onSaveSuccess }: { onSaveSuccess: () => void }) {
                         onChange={(e) => setContent(e.target.value)}
                         readOnly={loading || saveLoading}
                         placeholder="Paste student feedback, course reviews, or survey responses to analyze sentiment and generate insights..."
-                        className="h-40 sm:h-80 resize-none mt-1"
+                        className="h-40 resize-none mt-1"
                     />
 
                     <div className="flex justify-end">

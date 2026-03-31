@@ -20,14 +20,14 @@ interface FeedbackCardProps {
 }
 
 export function FeedbackCard({ feedback, setFeedback, loading }: FeedbackCardProps) {
-  
+
 
     const [onDelete, setOnDelete] = useState(false);
     const [onEdit, setOnEdit] = useState(false);
 
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
-    // ✅ DELETE
+    // Delete
     const handleDelete = async () => {
         try {
             if (!selectedItem) return;
@@ -64,7 +64,7 @@ export function FeedbackCard({ feedback, setFeedback, loading }: FeedbackCardPro
                 summary: aiResponse.summary,
             };
 
-            //once the AI analysis is done, updating the feedback with new content
+            // Once the AI analysis is done, updating the feedback with new content
             const res = await updateFeedback(selectedItem.id, payload);
 
             setFeedback((prev) =>
@@ -82,7 +82,7 @@ export function FeedbackCard({ feedback, setFeedback, loading }: FeedbackCardPro
     };
 
 
-    // ✅ LOADING STATE
+    // Loading State
     if (loading) {
         return (
             <div className="flex justify-center items-center py-10">
@@ -94,7 +94,7 @@ export function FeedbackCard({ feedback, setFeedback, loading }: FeedbackCardPro
         );
     }
 
-    // ✅ EMPTY STATE
+    // Empty State
     if (!loading && feedback.length === 0) {
         return (
             <Card className="text-center py-10 text-gray-500 text-xs flex flex-col items-center">
@@ -212,7 +212,7 @@ export function FeedbackCard({ feedback, setFeedback, loading }: FeedbackCardPro
             {
                 onEdit && selectedItem && (
                     <ReusableEditDialog
-                        title="Edit Feedback"
+                        title="Re-analyze Feedback"
                         initialContent={selectedItem.content}
                         open={onEdit}
                         onOpenChange={setOnEdit}
