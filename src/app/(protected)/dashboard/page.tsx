@@ -84,7 +84,10 @@ export default function Dashboard() {
 
                     <div className="grid grid-cols-12 gap-6">
 
-                        <FeedbackForm onSaveSuccess={fetchAllFeedback} />
+                        <FeedbackForm onSaveSuccess={() => {
+                            fetchAllFeedback();
+                            fetchAllMetrics();
+                        }} />
 
                         <StatsCards stats={stats} loading={metricsLoading} />
                     </div>
